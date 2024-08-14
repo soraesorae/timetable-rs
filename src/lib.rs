@@ -5,7 +5,9 @@ enum StackData {
     Restore(HashSet<usize>),
 }
 
-pub fn generate_table(v: Vec<HashSet<usize>>) {
+// TODO: use Rc<RefCell<_>>
+// TODO: index number <-> class time struct
+pub fn generate_table(v: Vec<HashSet<usize>>, n: usize, output: &mut Vec<BTreeSet<usize>>) {
     let mut cache: HashSet<BTreeSet<usize>> = HashSet::new();
 
     for (idx, set) in v.iter().enumerate() {
@@ -15,6 +17,10 @@ pub fn generate_table(v: Vec<HashSet<usize>>) {
         while let Some(class) = stack.pop() {
             match class {
                 StackData::History(id, history) => {
+                    if history.len() == n {
+                        output.push(history);
+                        continue;
+                    }
                     valid_set = valid_set
                         .intersection(v.get(id).unwrap())
                         .copied()
@@ -36,11 +42,14 @@ pub fn generate_table(v: Vec<HashSet<usize>>) {
             };
         }
     }
+
+    dbg!(output);
 }
 
-pub fn get_basic_data_sets(basic_data: Vec<Vec<u64>>) -> Option<HashSet<BTreeSet<u64>>> {
-    let valid_sets: Vec<BTreeSet<u64>> = basic_data.into_iter().map(BTreeSet::from_iter).collect();
-    let valid_sets: HashSet<BTreeSet<u64>> = HashSet::from_iter(valid_sets);
+pub fn get_basic_data_sets(basic_data: Vec<Vec<usize>>) -> Option<HashSet<BTreeSet<usize>>> {
+    let valid_sets: Vec<BTreeSet<usize>> =
+        basic_data.into_iter().map(BTreeSet::from_iter).collect();
+    let valid_sets: HashSet<BTreeSet<usize>> = HashSet::from_iter(valid_sets);
     if !valid_sets.is_empty() {
         Some(valid_sets)
     } else {
@@ -85,5 +94,13 @@ mod tests {
         ]);
 
         assert_eq!(output, Some(expected));
+    }
+
+    #[test]
+    fn test_generate_table_with_basic_data() {
+        let data = generate_basic_data_2();
+        let input: Vec<HashSet<usize>> = data.into_iter().map(HashSet::from_iter).collect();
+        let mut output: Vec<BTreeSet<usize>> = Vec::new();
+        generate_table(input, 4, &mut output);
     }
 }
