@@ -54,8 +54,22 @@ mod tests {
 
     use super::*;
 
-    fn generate_basic_data() -> Vec<Vec<u64>> {
+    fn generate_basic_data() -> Vec<Vec<usize>> {
         [vec![2, 3, 4], vec![3], vec![0], vec![1, 4], vec![3]].to_vec()
+    }
+
+    fn generate_basic_data_2() -> Vec<Vec<usize>> {
+        // [vec![1, 2, 3, 4], vec![0, 3, 4], vec![0, 3, 4, 5], vec![0, 1, 2, 5], vec![0, 1, 2, 5], vec![2, 3, 4]].to_vec()
+        [
+            vec![1, 2, 3, 4, 6],
+            vec![0, 3, 4, 6],
+            vec![0, 3, 4, 5, 6],
+            vec![0, 1, 2, 5, 6],
+            vec![0, 1, 2, 5, 6],
+            vec![2, 3, 4, 6],
+            vec![0, 1, 2, 3, 4, 5],
+        ]
+        .to_vec()
     }
 
     #[test]
