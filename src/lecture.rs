@@ -52,6 +52,12 @@ pub struct LectureTime {
 
 impl LectureTime {
     pub fn new(week_day: WeekDay, start: TimePoint, end: TimePoint) -> LectureTime {
+        if let WeekDay::Unknown = week_day {
+            panic!("Unknown Week of Day");
+        }
+        if start.total_minutes > end.total_minutes {
+            panic!("start time > end time");
+        }
         LectureTime {
             week_day,
             start,
