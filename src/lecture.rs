@@ -80,18 +80,17 @@ impl LectureSchedule {
                 lecture_time.start.total_minutes,
                 lecture_time.end.total_minutes,
             );
-            for other_lecture_time in &other.times {
+            let res = other.times.iter().any(|other_lecture| {
                 let (other_day, other_start, other_end) = (
-                    &other_lecture_time.week_day,
-                    other_lecture_time.start.total_minutes,
-                    other_lecture_time.end.total_minutes,
+                    &other_lecture.week_day,
+                    other_lecture.start.total_minutes,
+                    other_lecture.end.total_minutes,
                 );
-                // other_end >= start && end >= other_start
                 // start <= other_end && other_start <= end
-                // TODO: edge case
-                if day == other_day && !(other_end < start || end < other_start) {
-                    return true;
-                }
+                day == other_day && !(other_end < start || end < other_start)
+            });
+            if res {
+                return true;
             }
         }
         false
