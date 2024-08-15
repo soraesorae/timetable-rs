@@ -29,15 +29,17 @@ impl From<u8> for WeekDay {
 pub struct TimePoint {
     hour: u8,
     minute: u8,
+    total_minutes: u16,
 }
 
 impl TimePoint {
     pub fn new(hour: u8, minute: u8) -> TimePoint {
-        TimePoint { hour, minute }
-    }
-
-    pub fn to_int(self) -> u16 {
-        (self.hour as u16) * 60 + (self.minute as u16)
+        let total_minutes = (hour as u16) * 60 + (minute as u16);
+        TimePoint {
+            hour,
+            minute,
+            total_minutes,
+        }
     }
 }
 
@@ -69,8 +71,34 @@ impl LectureSchedule {
     pub fn new(name: String, code: String, times: Vec<LectureTime>) -> LectureSchedule {
         LectureSchedule { name, code, times }
     }
+
+    // TODO: check other.end == start
+    pub fn is_conflict(&self, other: &LectureSchedule) -> bool {
+        for lecture_time in &self.times {
+            let (day, start, end) = (
+                &lecture_time.week_day,
+                lecture_time.start.total_minutes,
+                lecture_time.end.total_minutes,
+            );
+            for other_lecture_time in &other.times {
+                let (other_day, other_start, other_end) = (
+                    &other_lecture_time.week_day,
+                    other_lecture_time.start.total_minutes,
+                    other_lecture_time.end.total_minutes,
+                );
+                // other_end >= start && end >= other_start
+                // start <= other_end && other_start <= end
+                // TODO: edge case
+                if day == other_day && !(other_end < start || end < other_start) {
+                    return true;
+                }
+            }
+        }
+        false
+    }
 }
 
+// TODO: fuzzer
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -114,7 +142,50 @@ mod tests {
     }
 
     #[test]
-    fn test_lecture_is_conflict() {}
+    fn test_lecture_is_conflict() {
+        let first = LectureTime::new(
+            WeekDay::Monday,
+            TimePoint::new(10, 0),
+            TimePoint::new(12, 30),
+        );
+        let second = LectureTime::new(
+            WeekDay::Wednsday,
+            TimePoint::new(10, 0),
+            TimePoint::new(12, 30),
+        );
+        let lecture_1 = make_lecture_schedule(1, first, second);
 
-    // fuzzer
+        let first = LectureTime::new(
+            WeekDay::Monday,
+            TimePoint::new(12, 20),
+            TimePoint::new(13, 30),
+        );
+        let second = LectureTime::new(
+            WeekDay::Wednsday,
+            TimePoint::new(12, 20),
+            TimePoint::new(13, 30),
+        );
+        let lecture_2 = make_lecture_schedule(2, first, second);
+
+        let first = LectureTime::new(
+            WeekDay::Monday,
+            TimePoint::new(13, 20),
+            TimePoint::new(15, 30),
+        );
+        let second = LectureTime::new(
+            WeekDay::Wednsday,
+            TimePoint::new(13, 20),
+            TimePoint::new(15, 30),
+        );
+        let lecture_3 = make_lecture_schedule(3, first, second);
+
+        assert_eq!(lecture_1.is_conflict(&lecture_2), true);
+        assert_eq!(lecture_2.is_conflict(&lecture_1), true);
+
+        assert_eq!(lecture_1.is_conflict(&lecture_3), false);
+        assert_eq!(lecture_3.is_conflict(&lecture_1), false);
+
+        assert_eq!(lecture_2.is_conflict(&lecture_3), true);
+        assert_eq!(lecture_3.is_conflict(&lecture_2), true);
+    }
 }
