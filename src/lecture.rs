@@ -75,22 +75,30 @@ impl LectureSchedule {
 mod tests {
     use super::*;
 
+    fn make_lecture_schedule(
+        num: usize,
+        first: LectureTime,
+        second: LectureTime,
+    ) -> LectureSchedule {
+        LectureSchedule::new(
+            String::from(format!("lecture-{}", num)),
+            String::from(format!("lecture-code-{}", num)),
+            vec![first, second],
+        )
+    }
+
     #[test]
     fn test_lecture_sechedule() {
-        let lecture_1_first =
-            LectureTime::new(WeekDay::Monday, TimePoint::new(9, 0), TimePoint::new(10, 0));
-        let lecture_1_second = LectureTime::new(
+        let first = LectureTime::new(WeekDay::Monday, TimePoint::new(9, 0), TimePoint::new(10, 0));
+        let second = LectureTime::new(
             WeekDay::Wednsday,
             TimePoint::new(12, 0),
             TimePoint::new(13, 0),
         );
-        let lecture_1 = LectureSchedule::new(
-            String::from("lecture-1"),
-            String::from("lecture-1-code"),
-            vec![lecture_1_first, lecture_1_second],
-        );
 
-        assert_eq!(lecture_1.code, "lecture-1-code");
+        let lecture_1 = make_lecture_schedule(1, first, second);
+
+        assert_eq!(lecture_1.code, "lecture-code-1");
         assert_eq!(
             lecture_1.times[0],
             LectureTime::new(WeekDay::Monday, TimePoint::new(9, 0), TimePoint::new(10, 0))
@@ -104,4 +112,9 @@ mod tests {
             )
         );
     }
+
+    #[test]
+    fn test_lecture_is_conflict() {}
+
+    // fuzzer
 }
