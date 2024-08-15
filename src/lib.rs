@@ -1,6 +1,7 @@
 use std::collections::{BTreeSet, HashSet};
 
 pub mod calc;
+pub mod lecture;
 
 pub fn get_basic_data_sets(basic_data: Vec<Vec<usize>>) -> Option<HashSet<BTreeSet<usize>>> {
     let valid_sets: Vec<BTreeSet<usize>> =
